@@ -9,6 +9,7 @@ import java.util.Set;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
@@ -25,8 +26,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 
-	public PhiloStoneSmeltingRecipe(CraftingBookCategory category) {
-		super(category);
+	public static final PhiloStoneSmeltingRecipe INSTANCE = new PhiloStoneSmeltingRecipe();
+	public static final PERecipeSerializer<PhiloStoneSmeltingRecipe> SERIALIZER = PERecipeSerializer.unit(INSTANCE);
+
+	public PhiloStoneSmeltingRecipe() {
+		super(CraftingBookCategory.MISC);
 	}
 
 	@Override
@@ -38,17 +42,26 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 	@NotNull
 	@Override
 	public ItemStack assemble(@NotNull CraftingInput inv, @NotNull HolderLookup.Provider registryAccess) {
-		Set<RecipeHolder<SmeltingRecipe>> matchingRecipes = getMatchingRecipes(inv, ServerLifecycleHooks.getCurrentServer().overworld());
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null) {
+			return ItemStack.EMPTY;
+		}
+		Set<RecipeHolder<SmeltingRecipe>> matchingRecipes = getMatchingRecipes(inv, server.overworld());
 		if (matchingRecipes.isEmpty()) {
 			return ItemStack.EMPTY;
 		}
 		//If we have at least one matching recipe, return the output
 		//Note: It is multiplied by seven as we have seven inputs
-		ItemStack output = matchingRecipes.stream().findFirst().get().value().getResultItem(registryAccess);
+		SingleRecipeInput recipeInput = new SingleRecipeInput(ItemStack.EMPTY);
+		ItemStack output = matchingRecipes.stream().findFirst().get().value().assemble(recipeInput, registryAccess);
 		return output.copyWithCount(output.getCount() * 7);
 	}
 
 	private Set<RecipeHolder<SmeltingRecipe>> getMatchingRecipes(CraftingInput inv, @NotNull Level level) {
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server == null) {
+			return Collections.emptySet();
+		}
 		List<ItemStack> philoStones = new ArrayList<>();
 		List<ItemStack> coals = new ArrayList<>();
 		List<ItemStack> allItems = new ArrayList<>();
@@ -83,7 +96,8 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 								if (matchingRecipes.isEmpty()) {
 									//If there are no matching recipes yet see if there are any recipes that match the current stack and add them if they are,
 									// if we didn't end up adding any elements that means there are no matching recipes so fail
-									if (!matchingRecipes.addAll(level.getRecipeManager().getRecipesFor(RecipeType.SMELTING, furnaceInput, level))) {
+									if (!matchingRecipes.addAll(server.getRecipeManager().recipeMap()
+											.getRecipesFor(RecipeType.SMELTING, furnaceInput, level).toList())) {
 										return Collections.emptySet();
 									}
 								} else {
@@ -113,14 +127,9 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 		return Collections.emptySet();
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width * height >= 9;
-	}
-
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return PERecipeSerializers.PHILO_STONE_SMELTING.get();
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
+		return SERIALIZER;
 	}
 }

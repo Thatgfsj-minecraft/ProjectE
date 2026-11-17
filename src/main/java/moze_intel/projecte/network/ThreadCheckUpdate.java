@@ -1,5 +1,6 @@
 package moze_intel.projecte.network;
 
+import java.net.URI;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.utils.text.PELang;
 import moze_intel.projecte.utils.text.TextComponentUtil;
@@ -63,9 +64,10 @@ public class ThreadCheckUpdate extends Thread {
 	public static void worldLoad(EntityJoinLevelEvent evt) {
 		if (evt.getEntity() instanceof LocalPlayer player && target != null && !hasSentMessage) {
 			hasSentMessage = true;
-			player.sendSystemMessage(PELang.UPDATE_AVAILABLE.translate(target));
-			player.sendSystemMessage(PELang.UPDATE_GET_IT.translate());
-			player.sendSystemMessage(TextComponentUtil.build(new ClickEvent(ClickEvent.Action.OPEN_URL, curseURL), curseURL));
+			//Note: 1.21.11 only has sendSystemMessage on ServerPlayer, for a client player we display the message locally
+			player.displayClientMessage(PELang.UPDATE_AVAILABLE.translate(target), false);
+			player.displayClientMessage(PELang.UPDATE_GET_IT.translate(), false);
+			player.displayClientMessage(TextComponentUtil.build(new ClickEvent.OpenUrl(URI.create(curseURL)), curseURL), false);
 		}
 	}
 }

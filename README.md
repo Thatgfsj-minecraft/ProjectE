@@ -4,11 +4,21 @@ Repository for ProjectE, a complete rewrite of EE2 (Equivalent Exchange 2) for m
 
 Discover powerful alchemical tools, items, and devices. Break down unwanted items into EMC (Energy-Matter Covalence) and use that EMC to create new items.
 
+> **本仓库是 [Thatgfsj-minecraft](https://github.com/Thatgfsj-minecraft) 组织维护的 fork，新增 Minecraft 1.21.11 / NeoForge 21.11 构建线。**
+> 上游默认分支仍是 mc1.21.1；本仓库维护 Minecraft 1.21.11 / NeoForge 21.11 构建线。移植来源、构建方式、验证状态与已知问题见 [PORTING.md](PORTING.md)，第三方归属见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+>
+> | 版本线 | 状态 |
+> |---|---|
+> | Minecraft 1.21.11 / NeoForge 21.11.48 | 本 fork 维护（PR #3 待合并） |
+> | Minecraft 1.21.1 / NeoForge 21.1 | 上游（sinkillerj/ProjectE） |
+>
+> 构建：./gradlew build（JDK 21），产物在 build/libs。问题请提到本 fork 的 Issues（上游 Issues 不跟踪本 fork 的 1.21.11 线）。
+
 
 # I found a bug
 Bugs can be reported at: https://github.com/sinkillerj/ProjectE/issues
 
-Please try the latest release build before reporting, be sure to also include any logs or steps to reproduce you may have, as well as your Forge version, and whether or not you are using a third party loader such as Cauldron. When submitting logs please use a service such as Pastebin, do not paste the log directly into the issue.
+Please try the latest release build before reporting, be sure to also include any logs or steps to reproduce you may have, as well as your NeoForge version (本 fork 的 1.21.11 线), and whether or not you are using a third party loader such as Cauldron. When submitting logs please use a service such as Pastebin, do not paste the log directly into the issue.
 
 # Downloads
 https://www.curseforge.com/minecraft/mc-mods/projecte/files

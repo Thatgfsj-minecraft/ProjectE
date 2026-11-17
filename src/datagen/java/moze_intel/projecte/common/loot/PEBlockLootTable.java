@@ -3,7 +3,7 @@ package moze_intel.projecte.common.loot;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Set;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
@@ -53,6 +53,7 @@ public class PEBlockLootTable extends BlockLootSubProvider {
 		dropSelf(PEBlocks.DARK_MATTER_FURNACE.getBlock());
 		dropSelf(PEBlocks.DARK_MATTER_PEDESTAL.getBlock());
 		dropSelf(PEBlocks.INTERDICTION_TORCH.getBlock());
+		dropOther(PEBlocks.INTERDICTION_TORCH.getWallBlock(), PEBlocks.INTERDICTION_TORCH.getBlock());
 		dropSelf(PEBlocks.MOBIUS_FUEL.getBlock());
 		dropSelf(PEBlocks.RED_MATTER.getBlock());
 		dropSelf(PEBlocks.RED_MATTER_FURNACE.getBlock());

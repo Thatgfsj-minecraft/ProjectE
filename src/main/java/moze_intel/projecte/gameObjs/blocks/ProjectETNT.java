@@ -1,6 +1,7 @@
 package moze_intel.projecte.gameObjs.blocks;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
@@ -35,11 +36,13 @@ public class ProjectETNT extends TntBlock {
 	}
 
 	@Override
-	public void onCaughtFire(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @Nullable Direction side, @Nullable LivingEntity igniter) {
-		if (!level.isClientSide) {
+	public boolean onCaughtFire(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @Nullable Direction side, @Nullable LivingEntity igniter) {
+		//1.21.11 onCaughtFire has no igniting stack parameter
+		if (!level.isClientSide()) {
 			createAndAddEntity(level, pos, igniter);
 			level.gameEvent(igniter, GameEvent.PRIME_FUSE, pos);
 		}
+		return true;
 	}
 
 	public void createAndAddEntity(@NotNull Level level, @NotNull BlockPos pos, @Nullable LivingEntity igniter) {
@@ -64,13 +67,12 @@ public class ProjectETNT extends TntBlock {
 	}
 
 	@Override
-	public void wasExploded(Level level, @NotNull BlockPos pos, @NotNull Explosion explosion) {
-		if (!level.isClientSide) {
-			PrimedTnt tnt = tntEntityCreator.create(level, (float) pos.getX() + 0.5F, pos.getY(), (float) pos.getZ() + 0.5F, explosion.getIndirectSourceEntity());
-			int fuse = tnt.getFuse();
-			tnt.setFuse((short) (level.random.nextInt(fuse / 4) + fuse / 8));
-			level.addFreshEntity(tnt);
-		}
+	//1.21.11: wasExploded takes a ServerLevel (the 26.3 code took a Level, which is not an override here)
+	public void wasExploded(ServerLevel level, @NotNull BlockPos pos, @NotNull Explosion explosion) {
+		PrimedTnt tnt = tntEntityCreator.create(level, (float) pos.getX() + 0.5F, pos.getY(), (float) pos.getZ() + 0.5F, explosion.getIndirectSourceEntity());
+		int fuse = tnt.getFuse();
+		tnt.setFuse((short) (level.getRandom().nextInt(fuse / 4) + fuse / 8));
+		level.addFreshEntity(tnt);
 	}
 
 	@FunctionalInterface

@@ -33,7 +33,7 @@ public class JEIAliasHelper implements RVAliasHelper<ItemStack> {
 
 	@Override
 	public List<ItemStack> tagContents(TagKey<Item> tag) {
-		return BuiltInRegistries.ITEM.getTag(tag)
+		return BuiltInRegistries.ITEM.get(tag)
 				.stream()
 				.flatMap(HolderSet::stream)
 				.map(ItemStack::new)

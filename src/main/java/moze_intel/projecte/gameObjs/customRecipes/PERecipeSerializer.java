@@ -16,4 +16,11 @@ public record PERecipeSerializer<RECIPE extends Recipe<?>>(MapCodec<RECIPE> code
 				RecipeSerializer.SHAPELESS_RECIPE.streamCodec().map(wrapper, WrappedShapelessRecipe::getInternal)
 		);
 	}
+
+	/**
+	 * Creates a serializer for a recipe that has no fields of its own (a singleton recipe).
+	 */
+	public static <RECIPE extends Recipe<?>> PERecipeSerializer<RECIPE> unit(RECIPE instance) {
+		return new PERecipeSerializer<>(MapCodec.unit(instance), StreamCodec.unit(instance));
+	}
 }

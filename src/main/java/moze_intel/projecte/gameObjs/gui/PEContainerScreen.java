@@ -15,6 +15,13 @@ public abstract class PEContainerScreen<T extends AbstractContainerMenu> extends
 		super(container, invPlayer, title);
 	}
 
+	public PEContainerScreen(T container, Inventory invPlayer, Component title, int imageWidth, int imageHeight) {
+		super(container, invPlayer, title);
+		this.imageWidth = imageWidth;
+		this.imageHeight = imageHeight;
+		this.inventoryLabelY = imageHeight - 94;
+	}
+
 	@Override
 	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		super.render(graphics, mouseX, mouseY, partialTicks);

@@ -1,13 +1,15 @@
 package moze_intel.projecte.gameObjs.customRecipes;
 
+import java.util.List;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,27 +43,10 @@ public abstract class WrappedShapelessRecipe implements CraftingRecipe {
         return internal.matches(inv, world) && !assemble(inv, world.registryAccess()).isEmpty();
     }
 
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return internal.canCraftInDimensions(width, height);
-    }
-
-    @NotNull
-    @Override
-    public ItemStack getResultItem(@NotNull HolderLookup.Provider registryAccess) {
-        return internal.getResultItem(registryAccess);
-    }
-
     @NotNull
     @Override
     public NonNullList<ItemStack> getRemainingItems(@NotNull CraftingInput inv) {
         return internal.getRemainingItems(inv);
-    }
-
-    @NotNull
-    @Override
-    public NonNullList<Ingredient> getIngredients() {
-        return internal.getIngredients();
     }
 
     @Override
@@ -69,20 +54,25 @@ public abstract class WrappedShapelessRecipe implements CraftingRecipe {
         return internal.isSpecial();
     }
 
-    @NotNull
     @Override
-    public String getGroup() {
-        return internal.getGroup();
+    public boolean showNotification() {
+        return internal.showNotification();
     }
 
     @NotNull
     @Override
-    public ItemStack getToastSymbol() {
-        return internal.getToastSymbol();
+    public String group() {
+        return internal.group();
     }
 
     @Override
-    public boolean isIncomplete() {
-        return internal.isIncomplete();
+    public PlacementInfo placementInfo() {
+        return internal.placementInfo();
+    }
+
+    @NotNull
+    @Override
+    public List<RecipeDisplay> display() {
+        return internal.display();
     }
 }

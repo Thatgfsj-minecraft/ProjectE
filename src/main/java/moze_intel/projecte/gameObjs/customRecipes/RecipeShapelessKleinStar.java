@@ -6,6 +6,7 @@ import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,7 @@ public class RecipeShapelessKleinStar extends WrappedShapelessRecipe {
 
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CraftingRecipe> getSerializer() {
 		return PERecipeSerializers.KLEIN.get();
 	}
 
