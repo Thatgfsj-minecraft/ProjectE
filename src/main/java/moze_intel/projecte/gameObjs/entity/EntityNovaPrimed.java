@@ -8,7 +8,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class EntityNovaPrimed extends PrimedTnt {
@@ -39,13 +38,15 @@ public abstract class EntityNovaPrimed extends PrimedTnt {
 		return 16;
 	}
 
+	@NotNull
 	@Override
-	protected void explode() {
-		WorldHelper.createNovaExplosion(level(), this, getX(), getY(), getZ(), getExplosionPower());
+	public ItemStack getPickResult() {
+		//1.21.11: Entity#getPickedResult(HitResult) was renamed to getPickResult()
+		return new ItemStack(getBlock());
 	}
 
 	@Override
-	public ItemStack getPickedResult(@NotNull HitResult target) {
-		return new ItemStack(getBlock());
+	protected void explode() {
+		WorldHelper.createNovaExplosion(level(), this, getX(), getY(), getZ(), getExplosionPower());
 	}
 }

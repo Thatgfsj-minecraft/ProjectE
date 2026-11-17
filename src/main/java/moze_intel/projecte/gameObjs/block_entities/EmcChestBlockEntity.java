@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
@@ -23,13 +24,13 @@ public abstract class EmcChestBlockEntity extends EmcBlockEntity implements LidB
 		@Override
 		protected void onOpen(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state) {
 			level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.5F,
-					level.random.nextFloat() * 0.1F + 0.9F);
+					level.getRandom().nextFloat() * 0.1F + 0.9F);
 		}
 
 		@Override
 		protected void onClose(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state) {
 			level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_CLOSE, SoundSource.BLOCKS, 0.5F,
-					level.random.nextFloat() * 0.1F + 0.9F);
+					level.getRandom().nextFloat() * 0.1F + 0.9F);
 		}
 
 		@Override
@@ -38,7 +39,7 @@ public abstract class EmcChestBlockEntity extends EmcBlockEntity implements LidB
 		}
 
 		@Override
-		protected boolean isOwnContainer(Player player) {
+		public boolean isOwnContainer(Player player) {
 			return player.containerMenu instanceof EmcChestBlockEntityContainer<?> container && container.blockEntityMatches(EmcChestBlockEntity.this);
 		}
 	};
@@ -66,15 +67,17 @@ public abstract class EmcChestBlockEntity extends EmcBlockEntity implements LidB
 		return super.triggerEvent(id, type);
 	}
 
-	public void startOpen(Player player) {
-		if (!isRemoved() && !player.isSpectator() && level != null) {
-			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState());
+	public void startOpen(@NotNull ContainerUser user) {
+		//Note: EmcChestBlockEntity is not a Container itself (the container lives on the menu), so this is not an @Override.
+		//1.21.11 vanilla Container#startOpen takes a ContainerUser; Player implements ContainerUser.
+		if (!isRemoved() && !user.getLivingEntity().isSpectator() && level != null) {
+			openersCounter.incrementOpeners(user.getLivingEntity(), level, getBlockPos(), getBlockState(), 5.0);
 		}
 	}
 
-	public void stopOpen(Player player) {
-		if (!isRemoved() && !player.isSpectator() && level != null) {
-			openersCounter.decrementOpeners(player, level, getBlockPos(), getBlockState());
+	public void stopOpen(@NotNull ContainerUser user) {
+		if (!isRemoved() && !user.getLivingEntity().isSpectator() && level != null) {
+			openersCounter.decrementOpeners(user.getLivingEntity(), level, getBlockPos(), getBlockState());
 		}
 	}
 

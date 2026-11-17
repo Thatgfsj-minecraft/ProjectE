@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
-import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.core.HolderLookup;
@@ -19,8 +18,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class RecipesCovalenceRepair extends CustomRecipe {
 
-	public RecipesCovalenceRepair(CraftingBookCategory category) {
-		super(category);
+	public static final RecipesCovalenceRepair INSTANCE = new RecipesCovalenceRepair();
+	public static final PERecipeSerializer<RecipesCovalenceRepair> SERIALIZER = PERecipeSerializer.unit(INSTANCE);
+
+	public RecipesCovalenceRepair() {
+		super(CraftingBookCategory.MISC);
 	}
 
 	@Nullable
@@ -64,15 +66,10 @@ public class RecipesCovalenceRepair extends CustomRecipe {
 		return output;
 	}
 
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width > 1 || height > 1;
-	}
-
 	@NotNull
 	@Override
-	public RecipeSerializer<?> getSerializer() {
-		return PERecipeSerializers.COVALENCE_REPAIR.get();
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
+		return SERIALIZER;
 	}
 
 	private static class RepairTargetInfo {

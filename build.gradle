@@ -10,14 +10,14 @@ plugins {
     id('eclipse')
     id('idea')
     id('maven-publish')
-    id('com.gradleup.shadow') version('8.3.6')
+    id('com.gradleup.shadow') version('9.6.1')
     // https://projects.neoforged.net/neoforged/ModDevGradle
-    id('net.neoforged.moddev') version('2.0.78')
+    id('net.neoforged.moddev') version('2.0.148')
 }
 
 tasks.named('wrapper', Wrapper) {
     //Define wrapper values here so as to not have to always do so when updating gradlew.properties
-    gradleVersion = '8.12.1'
+    gradleVersion = '9.5.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -33,6 +33,15 @@ idea {
 }
 
 sourceSets {
+    // These integrations have no compatible 26.3 API artifact yet.
+    main.java {
+        exclude '**/integration/crafttweaker/**'
+        exclude '**/integration/recipe_viewer/emi/**'
+        exclude '**/integration/wthit/**'
+        exclude '**/integration/top/**'
+    }
+    datagen.java.exclude '**/client/integration/**'
+
     api {
         //The API has no resources
         resources.srcDirs = []
@@ -120,12 +129,11 @@ def replaceResources = tasks.register("replaceResources", Copy) {
 
 version = "${projecte_version}"
 group = "moze_intel.projecte"
-project.base.archivesName = "projecte"
+project.base.archivesName = "ProjectE-${minecraft_version}"
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.JETBRAINS)
     }
     withSourcesJar()
 }
@@ -194,14 +202,55 @@ neoForge.runs {
         server()
         programArgument('--nogui')
     }
+    //1.21.11 datagen is split into a client run and a server run. They must NOT share one output
+    //folder: vanilla's HashCache purges anything that is not part of the current run, so the server
+    //run would delete all generated assets (and vice versa). Each run therefore writes to its own
+    //folder; the generateData task merges them into src/datagen/generated afterwards.
     data {
-        data()
+        clientData()
         programArguments.addAll('--all', '--output', project.file('src/datagen/generated/').getAbsolutePath(),
                 '--mod', 'projecte', '--existing', project.file('src/main/resources/').getAbsolutePath())
-
         sourceSet = sourceSets.runData
         loadedMods = [neoForge.mods.projecte_datagen]
     }
+    serverData {
+        serverData()
+        programArguments.addAll('--all', '--output', project.file('build/generated-server-data/').getAbsolutePath(),
+                '--mod', 'projecte', '--existing', project.file('src/main/resources/').getAbsolutePath())
+        sourceSet = sourceSets.runData
+        loadedMods = [neoForge.mods.projecte_datagen]
+    }
+}
+
+//Convenience task: regenerate both data sets and merge the server data into the client output folder.
+//The copy is done with plain NIO (no task outputs declared on purpose): src/datagen/generated is a
+//resource directory, so declaring it as a task output would make Gradle reject the overlap with
+//processResources.
+tasks.register('mergeServerData') {
+    def srcDir = file('build/generated-server-data/data').toPath()
+    def dstDir = file('src/datagen/generated/data').toPath()
+    doLast {
+        if (java.nio.file.Files.exists(srcDir)) {
+            def stream = java.nio.file.Files.walk(srcDir)
+            try {
+                stream.filter { java.nio.file.Files.isRegularFile(it) }.forEach { path ->
+                    def target = dstDir.resolve(srcDir.relativize(path))
+                    java.nio.file.Files.createDirectories(target.parent)
+                    java.nio.file.Files.copy(path, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                }
+            } finally {
+                stream.close()
+            }
+        }
+    }
+}
+
+tasks.register('generateData') {
+    dependsOn tasks.named('runData'), tasks.named('runServerData'), tasks.named('mergeServerData')
+}
+
+tasks.named('mergeServerData') {
+    mustRunAfter tasks.named('runData'), tasks.named('runServerData')
 }
 
 static void exclusiveRepo(RepositoryHandler handler, String url, String... groups) {
@@ -225,6 +274,8 @@ repositories { RepositoryHandler handler ->
     exclusiveRepo(handler, 'https://maven.blamejared.com', filter -> {
         filter.includeGroupAndSubgroups('com.blamejared')
         filter.includeGroup('mezz.jei')
+        //JEI 27.x for 1.21.11 pulls its config library from the same BlameJared maven
+        filter.includeGroupAndSubgroups('net.mezzdev')
         filter.includeGroup('org.openzen.zencode')
     })
     exclusiveRepo(handler, 'https://maven.terraformersmc.com/', 'dev.emi')
@@ -232,56 +283,43 @@ repositories { RepositoryHandler handler ->
     exclusiveRepo(handler, 'https://maven2.bai.lol', 'lol.bai', 'mcp.mobius.waila')//WTHIT
     exclusiveRepo(handler, 'https://modmaven.dev/', 'mcjty.theoneprobe')
     exclusiveRepo(handler, 'https://www.cursemaven.com', 'curse.maven')
+    exclusiveRepo(handler, 'https://api.modrinth.com/maven', 'maven.modrinth')
 }
 
+//Tests are opt-in on 1.21.11 until the NeoForge test framework stops crashing its JVM on shutdown.
+def runProjecteTests = providers.gradleProperty('runProjecteTests').isPresent()
 test {
     useJUnitPlatform()
+    //1.21.11 + JDK 21: FML's ClassLoadingGuardian needs the SecurityManager to be allowed for the
+    //NeoForge test framework's ephemeral server, otherwise tests die with an IllegalAccessError.
+    jvmArgs('-Djava.security.manager=allow')
+    //NeoForge's ephemeral test server can only be bootstrapped once per JVM; give every test class its own JVM.
+    forkEvery = 1
+    //Known issue on 1.21.11: the NeoForge 21.11 test framework JVM sometimes exits with 255 while
+    //shutting down its ephemeral server (all tests still report as passed). Gradle treats the exit
+    //code as a hard failure, so tests are opt-in until upstream FML fixes the shutdown race.
+    //Run them with: ./gradlew test -PrunProjecteTests
+    onlyIf { runProjecteTests }
 }
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junit_version}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("net.neoforged:testframework:${neo_version}") {
         transitive = false
     }
 
+    compileOnly("maven.modrinth:jade:${jade_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     if (recipe_viewer == 'jei' || recipe_viewer == 'hybrid') {
         localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     }
 
-    compileOnly("dev.emi:emi-neoforge:${emi_version}+${minecraft_version}:api")
-    def emi = "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
-    //TODO: Re-evaluate (https://github.com/emilyploszaj/emi/issues/537) might allow us to not have to do this
-    //Compile against full emi in datagen
-    datagenCompileOnly(emi)
-    if (recipe_viewer == 'emi' || recipe_viewer == 'hybrid') {
-        localRuntime(emi)
-    } else {
-        //We still need it to load in datagen regardless of if we are using emi or a different viewer so that we can access EMI related objects
-        datagenRuntimeOnly(emi)
-    }
-
-
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     localRuntime("top.theillusivec4.curios:curios-neoforge:${curios_version}")
 
-    //TODO: Remove having to specify these as non transitive once https://github.com/McJtyMods/TheOneProbe/issues/548 is fixed
-    compileOnly("mcjty.theoneprobe:theoneprobe:${top_version}:api") {
-        transitive = false
-    }
-    localRuntime("mcjty.theoneprobe:theoneprobe:${top_version}") {
-        transitive = false
-    }
-    compileOnly("curse.maven:jade-api-324717:${jade_api_id}")
-    localRuntime("curse.maven:jade-324717:${jade_id}")
-    compileOnly("mcp.mobius.waila:wthit-api:forge-${wthit_version}")
-
-    def crt = "com.blamejared.crafttweaker:CraftTweaker-neoforge-${minecraft_version}:${crafttweaker_version}"
-    compileOnly(crt)
-    localRuntime(crt)
-
-    additionalRuntimeClasspath(implementation(shadow(group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1')))
+    implementation(shadow(group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'))
 }
 
 //Set the various variables/settings for the different process resources tasks
@@ -341,6 +379,7 @@ def shadowJar = tasks.named('shadowJar', ShadowJar) {
     // plugin anyways
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     archiveClassifier.set('') // Replace the default JAR
+    from('LICENSE') { into 'META-INF' }
     from([sourceSets.api.output, sourceSets.main.output])
 
     configurations = [project.configurations.shadow]

@@ -9,12 +9,15 @@ import moze_intel.projecte.gameObjs.registries.PEBlockTypes;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,21 +30,22 @@ public class MatterFurnace extends AbstractFurnaceBlock implements IMatterBlock,
 		this.matterType = type;
 	}
 
+	@NotNull
+	@Override
+	protected MapCodec<MatterFurnace> codec() {
+		//1.21.11: Block#codec is still abstract (26.3 has a default), so it has to be implemented explicitly
+		return PEBlockTypes.MATTER_FURNACE.value();
+	}
+
 	@Nullable
 	@Override
 	public BlockEntityTypeRegistryObject<? extends DMFurnaceBlockEntity> getType() {
 		return matterType == EnumMatterType.RED_MATTER ? PEBlockEntityTypes.RED_MATTER_FURNACE : PEBlockEntityTypes.DARK_MATTER_FURNACE;
 	}
 
-	@NotNull
-	@Override
-	protected MapCodec<MatterFurnace> codec() {
-		return PEBlockTypes.MATTER_FURNACE.value();
-	}
-
 	@Override
 	protected void openContainer(Level level, @NotNull BlockPos pos, @NotNull Player player) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			DMFurnaceBlockEntity furnace = WorldHelper.getBlockEntity(DMFurnaceBlockEntity.class, level, pos, true);
 			if (furnace != null) {
 				player.openMenu(furnace, pos);
@@ -50,19 +54,18 @@ public class MatterFurnace extends AbstractFurnaceBlock implements IMatterBlock,
 	}
 
 	@Override
-	@Deprecated
-	public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
-		if (state.getBlock() != newState.getBlock()) {
-			IItemHandler handler = WorldHelper.getCapability(level, ItemHandler.BLOCK, pos, state, null, null);
-			WorldHelper.dropInventory(handler, level, pos);
-			super.onRemove(state, level, pos, newState, isMoving);
+	public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+		if (oldState.getBlock() != newState.getBlock() && level instanceof Level world && !world.isClientSide()) {
+			ResourceHandler<ItemResource> handler = WorldHelper.getItemHandler(world, pos, oldState, null, null);
+			WorldHelper.dropInventory(handler, world, pos);
 		}
 	}
 
 	@Override
 	@Deprecated
-	public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
-		return ItemHandlerHelper.calcRedstoneFromInventory(WorldHelper.getCapability(level, ItemHandler.BLOCK, pos, state, null, null));
+	public int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Direction direction) {
+		ResourceHandler<ItemResource> handler = WorldHelper.getItemHandler(level, pos, state, null, null);
+		return handler == null ? 0 : ResourceHandlerUtil.getRedstoneSignalFromResourceHandler(handler);
 	}
 
 	@Override

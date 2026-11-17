@@ -4,6 +4,16 @@ Repository for ProjectE, a complete rewrite of EE2 (Equivalent Exchange 2) for m
 
 Discover powerful alchemical tools, items, and devices. Break down unwanted items into EMC (Energy-Matter Covalence) and use that EMC to create new items.
 
+> **本仓库是 [Thatgfsj-minecraft](https://github.com/Thatgfsj-minecraft) 组织维护的 fork，新增 Minecraft 1.21.11 / NeoForge 21.11 构建线。**
+> 上游默认分支仍是 mc1.21.1；本仓库维护 1.21.11 支持，移植来源与构建方式见 [PORTING.md](PORTING.md)。
+>
+> | 版本线 | 状态 |
+> |---|---|
+> | Minecraft 1.21.11 / NeoForge 21.11.48 | 本 fork 维护 |
+> | Minecraft 1.21.1 / NeoForge 21.1 | 上游（sinkillerj/ProjectE） |
+>
+> 构建：./gradlew build（JDK 21），产物在 build/libs。
+
 
 # I found a bug
 Bugs can be reported at: https://github.com/sinkillerj/ProjectE/issues

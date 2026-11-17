@@ -2,21 +2,27 @@ package moze_intel.projecte.common.tag;
 
 import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.common.datagen.RegistryKeyTagAppender;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class PEEntityTypeTagsProvider extends EntityTypeTagsProvider {
 
-	public PEEntityTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-		super(output, lookupProvider, PECore.MODID, existingFileHelper);
+	public PEEntityTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+		super(output, lookupProvider, PECore.MODID);
+	}
+
+	@Override
+	protected RegistryKeyTagAppender<EntityType<?>> tag(TagKey<EntityType<?>> tagKey) {
+		return RegistryKeyTagAppender.wrap(super.tag(tagKey), BuiltInRegistries.ENTITY_TYPE);
 	}
 
 	@Override

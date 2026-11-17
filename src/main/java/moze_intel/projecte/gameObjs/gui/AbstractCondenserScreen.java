@@ -1,6 +1,5 @@
 package moze_intel.projecte.gameObjs.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.CondenserMK2Container;
@@ -8,45 +7,51 @@ import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.TransmutationEMCFormatter;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractCondenserScreen<T extends CondenserContainer> extends PEContainerScreen<T> {
 
 	public AbstractCondenserScreen(T condenser, Inventory playerInventory, Component title) {
-		super(condenser, playerInventory, title);
-		this.imageWidth = 255;
-		this.imageHeight = 233;
+		super(condenser, playerInventory, title, 255, 233);
 	}
 
-	protected abstract ResourceLocation getTexture();
+	protected int getPlayerInventoryLabelX() {
+		return 48;
+	}
+
+	protected int getPlayerInventoryLabelY() {
+		return 142;
+	}
+
+	protected abstract Identifier getTexture();
 
 	@Override
 	protected void renderBg(@NotNull GuiGraphics graphics, float partialTicks, int x, int y) {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, getTexture());
-
-		graphics.blit(getTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
+		PEGuiGraphics.blit(graphics, getTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
 		int progress = menu.getProgressScaled();
-		graphics.blit(getTexture(), leftPos + 33, topPos + 10, 0, 235, progress, 10);
+		PEGuiGraphics.blit(graphics, getTexture(), leftPos + 33, topPos + 10, 0, 235, progress, 10);
 	}
 
 	@Override
 	protected void renderLabels(@NotNull GuiGraphics graphics, int x, int y) {
-		//Don't render title or inventory as we don't have space
-		long toDisplay = Math.min(menu.displayEmc.get(), menu.requiredEmc.get());
+		graphics.drawString(font, title, (imageWidth - font.width(title)) / 2, 4, PEGuiGraphics.LABEL_COLOR, false);
+		graphics.drawString(font, playerInventoryTitle, getPlayerInventoryLabelX(), getPlayerInventoryLabelY(), PEGuiGraphics.LABEL_COLOR, false);
+		long display = menu.displayEmc.get();
+		long required = menu.requiredEmc.get();
+		long toDisplay = required > 0 ? Math.min(display, required) : display;
 		Component emc = TransmutationEMCFormatter.formatEMC(toDisplay);
-		graphics.drawString(font, emc, 140, 10, 0x404040, false);
+		graphics.drawString(font, emc, 140, 10, PEGuiGraphics.LABEL_COLOR, false);
 	}
 
 	@Override
 	protected void renderTooltip(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
-		long toDisplay = Math.min(menu.displayEmc.get(), menu.requiredEmc.get());
+		long display = menu.displayEmc.get();
+		long required = menu.requiredEmc.get();
+		long toDisplay = required > 0 ? Math.min(display, required) : display;
 
 		if (toDisplay < 1e12) {
 			super.renderTooltip(graphics, mouseX, mouseY);
@@ -59,7 +64,7 @@ public abstract class AbstractCondenserScreen<T extends CondenserContainer> exte
 		int emcBottom = emcTop + 15;
 
 		if (mouseX > emcLeft && mouseX < emcRight && mouseY > emcTop && mouseY < emcBottom) {
-			setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(toDisplay)));
+			graphics.setTooltipForNextFrame(font, PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(toDisplay)), mouseX, mouseY);
 		} else {
 			super.renderTooltip(graphics, mouseX, mouseY);
 		}
@@ -72,7 +77,7 @@ public abstract class AbstractCondenserScreen<T extends CondenserContainer> exte
 		}
 
 		@Override
-		protected ResourceLocation getTexture() {
+		protected Identifier getTexture() {
 			return PECore.rl("textures/gui/condenser.png");
 		}
 	}
@@ -84,7 +89,7 @@ public abstract class AbstractCondenserScreen<T extends CondenserContainer> exte
 		}
 
 		@Override
-		protected ResourceLocation getTexture() {
+		protected Identifier getTexture() {
 			return PECore.rl("textures/gui/condenser_mk2.png");
 		}
 	}

@@ -5,6 +5,7 @@ import moze_intel.projecte.api.data.CustomConversionProvider;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.common.datagen.ColorCollections;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
@@ -20,6 +21,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.CompletableFuture;
 
 public class PECustomConversionProvider extends CustomConversionProvider {
+
+	private static Item concrete(DyeColor color) {
+		return ColorCollections.concreteItem(color);
+	}
+
+	private static Item concretePowder(DyeColor color) {
+		return ColorCollections.concretePowderItem(color);
+	}
 
 	public PECustomConversionProvider(@NotNull PackOutput output, @NotNull CompletableFuture<HolderLookup.Provider> lookupProvider) {
 		super(output, lookupProvider, PECore.MODID);
@@ -48,7 +57,8 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(ingotTag("cyanite"), 4).ingredient(ingotTag("uranium")).propagateTags().end()
 		;
 		NormalizedSimpleStack singleEMC = NSSFake.create("single_emc");
-		ItemStack waterBottle = PotionContents.createItemStack(Items.POTION, Potions.WATER);
+		NSSItem waterBottle = NSSItem.createItem(Items.POTION, net.minecraft.core.component.DataComponentPatch.builder()
+                .set(net.minecraft.core.component.DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER)).build());
 		createConversionBuilder(PECore.rl("defaults"))
 				.comment("Default values for vanilla items.")
 				.group("default")
@@ -133,22 +143,22 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.end()
 				.group("concrete_powder_to_block")
 				.comment("Propagate concrete powder values to concrete blocks.")
-				.conversion(Items.WHITE_CONCRETE).ingredient(Items.WHITE_CONCRETE_POWDER).end()
-				.conversion(Items.ORANGE_CONCRETE).ingredient(Items.ORANGE_CONCRETE_POWDER).end()
-				.conversion(Items.MAGENTA_CONCRETE).ingredient(Items.MAGENTA_CONCRETE_POWDER).end()
-				.conversion(Items.LIGHT_BLUE_CONCRETE).ingredient(Items.LIGHT_BLUE_CONCRETE_POWDER).end()
-				.conversion(Items.YELLOW_CONCRETE).ingredient(Items.YELLOW_CONCRETE_POWDER).end()
-				.conversion(Items.LIME_CONCRETE).ingredient(Items.LIME_CONCRETE_POWDER).end()
-				.conversion(Items.PINK_CONCRETE).ingredient(Items.PINK_CONCRETE_POWDER).end()
-				.conversion(Items.GRAY_CONCRETE).ingredient(Items.GRAY_CONCRETE_POWDER).end()
-				.conversion(Items.LIGHT_GRAY_CONCRETE).ingredient(Items.LIGHT_GRAY_CONCRETE_POWDER).end()
-				.conversion(Items.CYAN_CONCRETE).ingredient(Items.CYAN_CONCRETE_POWDER).end()
-				.conversion(Items.PURPLE_CONCRETE).ingredient(Items.PURPLE_CONCRETE_POWDER).end()
-				.conversion(Items.BLUE_CONCRETE).ingredient(Items.BLUE_CONCRETE_POWDER).end()
-				.conversion(Items.BROWN_CONCRETE).ingredient(Items.BROWN_CONCRETE_POWDER).end()
-				.conversion(Items.GREEN_CONCRETE).ingredient(Items.GREEN_CONCRETE_POWDER).end()
-				.conversion(Items.RED_CONCRETE).ingredient(Items.RED_CONCRETE_POWDER).end()
-				.conversion(Items.BLACK_CONCRETE).ingredient(Items.BLACK_CONCRETE_POWDER).end()
+				.conversion(concrete(DyeColor.WHITE)).ingredient(concretePowder(DyeColor.WHITE)).end()
+				.conversion(concrete(DyeColor.ORANGE)).ingredient(concretePowder(DyeColor.ORANGE)).end()
+				.conversion(concrete(DyeColor.MAGENTA)).ingredient(concretePowder(DyeColor.MAGENTA)).end()
+				.conversion(concrete(DyeColor.LIGHT_BLUE)).ingredient(concretePowder(DyeColor.LIGHT_BLUE)).end()
+				.conversion(concrete(DyeColor.YELLOW)).ingredient(concretePowder(DyeColor.YELLOW)).end()
+				.conversion(concrete(DyeColor.LIME)).ingredient(concretePowder(DyeColor.LIME)).end()
+				.conversion(concrete(DyeColor.PINK)).ingredient(concretePowder(DyeColor.PINK)).end()
+				.conversion(concrete(DyeColor.GRAY)).ingredient(concretePowder(DyeColor.GRAY)).end()
+				.conversion(concrete(DyeColor.LIGHT_GRAY)).ingredient(concretePowder(DyeColor.LIGHT_GRAY)).end()
+				.conversion(concrete(DyeColor.CYAN)).ingredient(concretePowder(DyeColor.CYAN)).end()
+				.conversion(concrete(DyeColor.PURPLE)).ingredient(concretePowder(DyeColor.PURPLE)).end()
+				.conversion(concrete(DyeColor.BLUE)).ingredient(concretePowder(DyeColor.BLUE)).end()
+				.conversion(concrete(DyeColor.BROWN)).ingredient(concretePowder(DyeColor.BROWN)).end()
+				.conversion(concrete(DyeColor.GREEN)).ingredient(concretePowder(DyeColor.GREEN)).end()
+				.conversion(concrete(DyeColor.RED)).ingredient(concretePowder(DyeColor.RED)).end()
+				.conversion(concrete(DyeColor.BLACK)).ingredient(concretePowder(DyeColor.BLACK)).end()
 				.end()
 				.group("damaged_anvil")
 				.comment("Calculates values for chipped and damaged anvils based on the average of surviving for 25 uses.")
@@ -195,7 +205,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.SMALL_DRIPLEAF, 24)
 				.before(Items.BIG_DRIPLEAF, 32)
 				.before(ItemTags.SMALL_FLOWERS, 16)
-				.before(ItemTags.TALL_FLOWERS, 32)
+				.before(ItemTags.FLOWERS, 32)
 				.before(Items.RED_MUSHROOM, 32)
 				.before(Items.BROWN_MUSHROOM, 32)
 				.before(Items.SUGAR_CANE, 32)
@@ -383,8 +393,10 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				;
 	}
 
-	private ItemStack horn(HolderLookup.Provider registries, ResourceKey<Instrument> instrument) {
-		return InstrumentItem.create(Items.GOAT_HORN, registries.holderOrThrow(instrument));
+	private NSSItem horn(HolderLookup.Provider registries, ResourceKey<Instrument> instrument) {
+		return NSSItem.createItem(Items.GOAT_HORN, net.minecraft.core.component.DataComponentPatch.builder()
+                .set(net.minecraft.core.component.DataComponents.INSTRUMENT,
+                        new net.minecraft.world.item.component.InstrumentComponent(registries.holderOrThrow(instrument))).build());
 	}
 
 	private static NormalizedSimpleStack ingotTag(String ingot) {

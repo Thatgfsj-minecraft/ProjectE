@@ -131,7 +131,7 @@ public final class ItemInfo {
 		if (stack.representsTag()) {
 			return null;
 		}
-		Optional<Holder.Reference<Item>> holder = BuiltInRegistries.ITEM.getHolder(stack.getResourceLocation());
+		Optional<Holder.Reference<Item>> holder = BuiltInRegistries.ITEM.get(stack.getResourceLocation());
 		//noinspection OptionalIsPresent - Capturing lambda
 		if (holder.isEmpty()) {
 			return null;
@@ -175,13 +175,8 @@ public final class ItemInfo {
 	 * @apiNote This might return null if the item has the component as a default component and the component is at that default value.
 	 */
 	@Nullable
-	@SuppressWarnings("OptionalAssignedToNull")
 	public <T> T getOrNull(DataComponentType<? extends T> type) {
-		Optional<? extends T> storedComponent = componentsPatch.get(type);
-		if (storedComponent == null || storedComponent.isEmpty()) {
-			return null;
-		}
-		return storedComponent.get();
+		return componentsPatch.get(type).map(value -> (T) value).orElse(null);
 	}
 
 	/**

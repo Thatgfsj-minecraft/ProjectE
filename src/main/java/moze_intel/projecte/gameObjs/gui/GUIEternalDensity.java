@@ -7,19 +7,17 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer> {
 
-	private static final ResourceLocation texture = PECore.rl("textures/gui/eternal_density.png");
+	private static final Identifier texture = PECore.rl("textures/gui/eternal_density.png");
 
 	public GUIEternalDensity(EternalDensityContainer container, Inventory inv, Component title) {
-		super(container, inv, title);
-		this.imageWidth = 180;
-		this.imageHeight = 180;
+		super(container, inv, title, 180, 180);
 	}
 
 	@Override
@@ -28,7 +26,7 @@ public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer
 		addRenderableWidget(Button.builder((menu.isWhitelistMode() ? PELang.WHITELIST : PELang.BLACKLIST).translate(), b -> {
 					//Toggle the mode
 					boolean isWhitelistMode = !menu.isWhitelistMode();
-					PacketDistributor.sendToServer(new UpdateGemModePKT(menu.hand, isWhitelistMode));
+					ClientPacketDistributor.sendToServer(new UpdateGemModePKT(menu.hand, isWhitelistMode));
 					b.setMessage(isWhitelistMode ? PELang.WHITELIST.translate() : PELang.BLACKLIST.translate());
 				}).pos(leftPos + 62, topPos + 4)
 				.size(52, 20)
@@ -37,7 +35,7 @@ public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer
 
 	@Override
 	protected void renderBg(@NotNull GuiGraphics graphics, float partialTicks, int x, int y) {
-		graphics.blit(texture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+		PEGuiGraphics.blit(graphics, texture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 	}
 
 	@Override
