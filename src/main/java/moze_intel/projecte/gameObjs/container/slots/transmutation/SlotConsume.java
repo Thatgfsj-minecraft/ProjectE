@@ -22,7 +22,6 @@ public class SlotConsume extends InventoryContainerSlot {
 		if (inv.isServer() && !stack.isEmpty()) {
 			inv.handleKnowledge(stack);
 			inv.addEmc(BigInteger.valueOf(IEMCProxy.INSTANCE.getSellValue(stack)).multiply(BigInteger.valueOf(stack.getCount())));
-			this.setChanged();
 		}
 	}
 

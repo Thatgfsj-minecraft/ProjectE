@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "projecte:item/transmutation_table"
+    "model": "projecte:block/transmutation_table"
   }
 }

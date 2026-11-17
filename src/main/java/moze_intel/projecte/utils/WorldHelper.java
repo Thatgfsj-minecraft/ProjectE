@@ -57,6 +57,7 @@ import net.minecraft.world.level.block.GlowLichenBlock;
 import net.minecraft.world.level.block.GrassBlock;
 import net.minecraft.world.level.block.GrowingPlantBlock;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.NyliumBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.StemBlock;
@@ -250,7 +251,7 @@ public final class WorldHelper {
 	}
 
 	public static boolean isLiquidContainerForFluid(@Nullable Player player, BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
-		return false;
+		return state.getBlock() instanceof LiquidBlockContainer liquidBlockContainer && liquidBlockContainer.canPlaceLiquid(player, level, pos, state, fluid);
 	}
 
 	/**
@@ -278,6 +279,9 @@ public final class WorldHelper {
 			for (int l = 0; l < 8; ++l) {
 				level.addParticle(ParticleTypes.LARGE_SMOKE, pos.getX() + Math.random(), pos.getY() + Math.random(), pos.getZ() + Math.random(), 0.0D, 0.0D, 0.0D);
 			}
+		} else if (isLiquidContainerForFluid(player, level, pos, blockState, fluid)) {
+			((LiquidBlockContainer) blockState.getBlock()).placeLiquid(level, pos, blockState, fluid.getSource(false));
+			level.gameEvent(player, GameEvent.FLUID_PLACE, pos);
 		} else {
 			//Based on BucketItem#emptyContents
 			if (blockState.canBeReplaced(fluid) && !blockState.liquid()) {

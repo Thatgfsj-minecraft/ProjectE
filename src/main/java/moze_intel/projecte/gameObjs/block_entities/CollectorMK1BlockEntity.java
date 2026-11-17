@@ -33,7 +33,6 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import moze_intel.projecte.api.inventory.PEItemStacksHandler;
 import moze_intel.projecte.utils.PECombinedItemStacks;
-import net.neoforged.neoforge.transfer.RangedResourceHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -68,7 +67,7 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 			}
 		}
 	};
-	private final PECombinedItemStacks toSort = new PECombinedItemStacks(RangedResourceHandler.of(auxSlots, UPGRADING_SLOT, UPGRADING_SLOT + 1), input);
+	private final PECombinedItemStacks toSort = new PECombinedItemStacks(new moze_intel.projecte.utils.SlicedItemStacksHandler(auxSlots, UPGRADING_SLOT, 1), input);
 	public static final int UPGRADING_SLOT = 0;
 	public static final int UPGRADE_SLOT = 1;
 	public static final int LOCK_SLOT = 2;

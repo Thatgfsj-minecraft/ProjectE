@@ -24,7 +24,7 @@ public class PEAttachmentTypes {
 
 	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<AlchemicalBagAttachment>> ALCHEMICAL_BAGS = ATTACHMENT_TYPES.register("alchemical_bags",
 			() -> AttachmentType.builder(AlchemicalBagAttachment::new)
-					.serialize(AlchemicalBagAttachment.MAP_CODEC)
+					.serialize(AlchemicalBagAttachment.SERIALIZER)
 					.copyHandler(AlchemicalBagAttachment::copy)
 					.copyOnDeath()
 					.build()

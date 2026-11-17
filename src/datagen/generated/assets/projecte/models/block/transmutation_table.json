@@ -41,6 +41,7 @@
   ],
   "textures": {
     "bottom": "projecte:block/transmutation_stone/bottom",
+    "particle": "projecte:block/transmutation_stone/top",
     "side": "projecte:block/transmutation_stone/side",
     "top": "projecte:block/transmutation_stone/top"
   }

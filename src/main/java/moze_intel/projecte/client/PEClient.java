@@ -152,6 +152,6 @@ public class PEClient {
 	}
 
 	private static boolean isJeiRecipesScreen(net.minecraft.client.gui.screens.Screen screen) {
-		return screen != null && screen.getClass().getName().equals("mezz.jei.library.gui.recipes.RecipesGui");
+		return screen != null && screen.getClass().getName().equals("mezz.jei.gui.recipes.RecipesGui");
 	}
 }

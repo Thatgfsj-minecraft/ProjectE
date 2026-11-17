@@ -79,8 +79,7 @@ public class PEModelProvider extends ModelProvider {
 				PEBlocks.DARK_MATTER_FURNACE, PEBlocks.RED_MATTER_FURNACE, PEBlocks.COLLECTOR, PEBlocks.COLLECTOR_MK2,
 				PEBlocks.COLLECTOR_MK3, PEBlocks.NOVA_CATALYST, PEBlocks.NOVA_CATACLYSM, PEBlocks.RELAY, PEBlocks.RELAY_MK2,
 				PEBlocks.RELAY_MK3);
-		generated(itemModels, PEBlocks.DARK_MATTER_PEDESTAL.getBlock().asItem(), modLocation("item/dm_pedestal"));
-		generated(itemModels, PEBlocks.TRANSMUTATION_TABLE.getBlock().asItem(), modLocation("item/transmutation_table"));
+		blockParentModel(itemModels, PEBlocks.DARK_MATTER_PEDESTAL, PEBlocks.TRANSMUTATION_TABLE);
 		registerGenerated(itemModels, PEItems.CATALYTIC_LENS, PEItems.DESTRUCTION_CATALYST, PEItems.LOW_DIVINING_ROD, PEItems.MEDIUM_DIVINING_ROD, PEItems.HIGH_DIVINING_ROD,
 				PEItems.HYPERKINETIC_LENS, PEItems.MERCURIAL_EYE, PEItems.PHILOSOPHERS_STONE, PEItems.REPAIR_TALISMAN, PEItems.TOME_OF_KNOWLEDGE,
 				PEItems.TRANSMUTATION_TABLET);
@@ -110,7 +109,7 @@ public class PEModelProvider extends ModelProvider {
 
 	private void registerChests(BlockModelGenerators blockModels) {
 		ExtendedModelTemplate baseChest = chestModelBuilder().build();
-		baseChest.create(modLocation("block/base_chest"), new TextureMapping().put(CHEST, texture("block/alchemical_chest")), blockModels.modelOutput);
+		baseChest.create(modLocation("block/base_chest"), new TextureMapping().put(CHEST, texture("block/alchemical_chest")).put(TextureSlot.PARTICLE, texture("block/alchemical_chest")), blockModels.modelOutput);
 		registerChestBlock(blockModels, PEBlocks.ALCHEMICAL_CHEST);
 		registerChestBlock(blockModels, PEBlocks.CONDENSER);
 		registerChestBlock(blockModels, PEBlocks.CONDENSER_MK2);
@@ -124,6 +123,7 @@ public class PEModelProvider extends ModelProvider {
 			json.addProperty("parent", modLocation("block/base_chest").toString());
 			JsonObject textures = new JsonObject();
 			textures.addProperty("chest", modLocation("block/" + name).toString());
+			textures.addProperty("particle", modLocation("block/" + name).toString());
 			json.add("textures", textures);
 			return json;
 		});
@@ -135,6 +135,7 @@ public class PEModelProvider extends ModelProvider {
 		ExtendedModelTemplateBuilder builder = ExtendedModelTemplateBuilder.builder()
 				.parent(Identifier.withDefaultNamespace("block/block"))
 				.requiredTextureSlot(CHEST)
+				.requiredTextureSlot(TextureSlot.PARTICLE)
 				.element(element -> element
 						.from(1, 0, 1).to(15, 10, 15)
 						.face(Direction.NORTH, face -> face.texture(CHEST).uvs(10.5F, 10.65F, 14, 8.25F))
@@ -229,6 +230,7 @@ public class PEModelProvider extends ModelProvider {
 				.requiredTextureSlot(BOTTOM)
 				.requiredTextureSlot(TOP)
 				.requiredTextureSlot(SIDE)
+				.requiredTextureSlot(TextureSlot.PARTICLE)
 				.element(element -> element
 						.from(0, 0, 0).to(16, 4, 16)
 						.face(Direction.DOWN, face -> face.texture(BOTTOM).cullface(Direction.DOWN))
@@ -326,6 +328,7 @@ public class PEModelProvider extends ModelProvider {
 			json.addProperty("parent", modLocation("block/base_chest").toString());
 			JsonObject textures = new JsonObject();
 			textures.addProperty("chest", modLocation("block/" + name).toString());
+			textures.addProperty("particle", modLocation("block/" + name).toString());
 			json.add("textures", textures);
 			return json;
 		});

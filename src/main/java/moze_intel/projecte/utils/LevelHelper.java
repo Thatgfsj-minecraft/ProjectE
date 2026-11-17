@@ -14,7 +14,8 @@ public final class LevelHelper {
 
 	public static void setWeather(@NotNull ServerLevel level, int durationTicks, boolean raining, boolean thundering) {
 		//1.21.11: weather is set on the server level itself
-		level.setWeatherParameters(durationTicks, durationTicks, raining, thundering);
+		//1.21.11: (clearWeatherTime, weatherTime, raining, thundering) - a positive clearWeatherTime forces clear weather
+		level.setWeatherParameters(0, durationTicks, raining, thundering);
 	}
 
 	public static long getDefaultClockTime(@NotNull ServerLevel level) {

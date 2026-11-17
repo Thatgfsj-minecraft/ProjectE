@@ -26,6 +26,10 @@ public class PECombinedItemStacks extends CombinedResourceHandler<ItemResource> 
 	}
 
 	public PEItemStacksHandler getStackHandler(int handlerIndex) {
-		return (PEItemStacksHandler) getHandlerFromIndex(handlerIndex);
+		ResourceHandler<ItemResource> handler = getHandlerFromIndex(handlerIndex);
+		if (handler instanceof SlicedItemStacksHandler sliced) {
+			return sliced.getDelegate();
+		}
+		return (PEItemStacksHandler) handler;
 	}
 }

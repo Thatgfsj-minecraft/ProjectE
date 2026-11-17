@@ -53,6 +53,7 @@ public class PEBlockLootTable extends BlockLootSubProvider {
 		dropSelf(PEBlocks.DARK_MATTER_FURNACE.getBlock());
 		dropSelf(PEBlocks.DARK_MATTER_PEDESTAL.getBlock());
 		dropSelf(PEBlocks.INTERDICTION_TORCH.getBlock());
+		dropOther(PEBlocks.INTERDICTION_TORCH.getWallBlock(), PEBlocks.INTERDICTION_TORCH.getBlock());
 		dropSelf(PEBlocks.MOBIUS_FUEL.getBlock());
 		dropSelf(PEBlocks.RED_MATTER.getBlock());
 		dropSelf(PEBlocks.RED_MATTER_FURNACE.getBlock());

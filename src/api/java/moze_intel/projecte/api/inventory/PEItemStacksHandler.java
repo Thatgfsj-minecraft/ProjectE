@@ -17,6 +17,30 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PEItemStacksHandler extends ItemStacksResourceHandler implements IndexModifier<ItemResource> {
 
+	@FunctionalInterface
+	private interface TransactionAction {
+		int run(@NotNull TransactionContext transaction);
+	}
+
+	/**
+	 * Runs an inventory mutation either inside the transaction the caller already owns (so the caller decides
+	 * whether to commit) or inside a fresh root transaction for legacy, non-transactional call sites.
+	 */
+	@SuppressWarnings("deprecation")
+	private static int inTransaction(@NotNull TransactionAction action, boolean simulate) {
+		TransactionContext current = Transaction.getCurrentOpenedTransaction();
+		if (current != null) {
+			return action.run(current);
+		}
+		try (Transaction transaction = Transaction.openRoot()) {
+			int result = action.run(transaction);
+			if (!simulate) {
+				transaction.commit();
+			}
+			return result;
+		}
+	}
+
 	public PEItemStacksHandler(int size) {
 		super(size);
 	}
@@ -43,13 +67,8 @@ public class PEItemStacksHandler extends ItemStacksResourceHandler implements In
 		if (stack.isEmpty()) {
 			return ItemStack.EMPTY;
 		}
-		try (Transaction tx = Transaction.openRoot()) {
-			int inserted = insert(slot, ItemResource.of(stack), stack.getCount(), tx);
-			if (!simulate) {
-				tx.commit();
-			}
-			return inserted >= stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - inserted);
-		}
+		int inserted = inTransaction(tx -> insert(slot, ItemResource.of(stack), stack.getCount(), tx), simulate);
+		return inserted >= stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - inserted);
 	}
 
 	@NotNull
@@ -61,13 +80,8 @@ public class PEItemStacksHandler extends ItemStacksResourceHandler implements In
 		if (resource.isEmpty()) {
 			return ItemStack.EMPTY;
 		}
-		try (Transaction tx = Transaction.openRoot()) {
-			int extracted = extract(slot, resource, amount, tx);
-			if (!simulate) {
-				tx.commit();
-			}
-			return extracted <= 0 ? ItemStack.EMPTY : resource.toStack(extracted);
-		}
+		int extracted = inTransaction(tx -> extract(slot, resource, amount, tx), simulate);
+		return extracted <= 0 ? ItemStack.EMPTY : resource.toStack(extracted);
 	}
 
 	public int getSlotLimit(int slot) {
@@ -120,13 +134,7 @@ public class PEItemStacksHandler extends ItemStacksResourceHandler implements In
 		if (stack.isEmpty()) {
 			return 0;
 		}
-		try (Transaction tx = Transaction.openRoot()) {
-			int inserted = ResourceHandlerUtil.insertStacking(handler, ItemResource.of(stack), stack.getCount(), tx);
-			if (!simulate) {
-				tx.commit();
-			}
-			return inserted;
-		}
+		return inTransaction(tx -> ResourceHandlerUtil.insertStacking(handler, ItemResource.of(stack), stack.getCount(), tx), simulate);
 	}
 
 	@NotNull
@@ -152,13 +160,8 @@ public class PEItemStacksHandler extends ItemStacksResourceHandler implements In
 		if (resource.isEmpty()) {
 			return ItemStack.EMPTY;
 		}
-		try (Transaction tx = Transaction.openRoot()) {
-			int extracted = handler.extract(slot, resource, amount, tx);
-			if (!simulate) {
-				tx.commit();
-			}
-			return extracted <= 0 ? ItemStack.EMPTY : resource.toStack(extracted);
-		}
+		int extracted = inTransaction(tx -> handler.extract(slot, resource, amount, tx), simulate);
+		return extracted <= 0 ? ItemStack.EMPTY : resource.toStack(extracted);
 	}
 
 	public static int getSlotCount(@NotNull ResourceHandler<ItemResource> handler) {
